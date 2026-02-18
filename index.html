@@ -4,16 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Indian Income Tax Calculator</title>
-
-    <!-- PWA -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#FF6B6B">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Tax Calculator">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <style>
         * {
             margin: 0;
@@ -954,7 +944,7 @@
                         <span class="result-value" id="newTaxBeforeCess">₹0</span>
                     </div>
                     <div class="result-item tax-calculation" id="newSurchargeRow" style="display:none;">
-                        <span class="result-label">Surcharge:</span>
+                        <span class="result-label" id="newSurchargeLabel">Surcharge:</span>
                         <span class="result-value" id="newSurcharge">₹0</span>
                     </div>
                     <div class="result-item tax-calculation">
@@ -1016,7 +1006,7 @@
                         <span class="result-value" id="oldTaxBeforeCess">₹0</span>
                     </div>
                     <div class="result-item tax-calculation" id="oldSurchargeRow" style="display:none;">
-                        <span class="result-label">Surcharge:</span>
+                        <span class="result-label" id="oldSurchargeLabel">Surcharge:</span>
                         <span class="result-value" id="oldSurcharge">₹0</span>
                     </div>
                     <div class="result-item tax-calculation">
@@ -1074,6 +1064,10 @@
                     <div class="relief-data-row tax-calc-row">
                         <span>Tax After Relief:</span>
                         <span id="reliefTaxAfter"></span>
+                    </div>
+                    <div class="relief-data-row tax-calc-row" id="reliefSurchargeRow" style="display:none;">
+                        <span id="reliefSurchargeLabel">Surcharge:</span>
+                        <span id="reliefSurcharge"></span>
                     </div>
                     <div class="relief-data-row tax-calc-row">
                         <span>Health & Education Cess (4%):</span>
@@ -1243,19 +1237,21 @@
                 }
             }
             
-            // Surcharge (New Regime: max capped at 25%)
-            let _0xsr=0;
-            if(_0xn>50000000){_0xsr=0.25;}
-            else if(_0xn>20000000){_0xsr=0.25;}
-            else if(_0xn>10000000){_0xsr=0.15;}
-            else if(_0xn>5000000){_0xsr=0.10;}
-            const _0xsamt=_0xt*_0xsr;
-            const _0xtas=_0xt+_0xsamt;
-            const _0xc=_0xtas*0.04;
-            const _0xtt=_0xtas+_0xc;
-            if(_0xsr>0){_0xb+=`<div class="breakdown-item"><span>Surcharge @ ${_0xsr*100}%</span><span>${_0xfmt(Math.round(_0xsamt))}</span></div>`;}
-            _0xb+=`<div class="breakdown-item"><span>Health & Education Cess @ 4%</span><span>${_0xfmt(Math.round(_0xc))}</span></div>`;
-            return{grossSalary:_0xg,taxableIncome:_0xn,taxBeforeCess:Math.round(_0xt),surcharge:Math.round(_0xsamt),cess:Math.round(_0xc),totalTax:Math.round(_0xtt),breakdown:_0xb};
+            // Surcharge + Marginal Relief on Surcharge (New Regime, FY 2025-26)
+            // Rates: >50L=10%, >1Cr=15%, >2Cr=25%, >5Cr=25%(capped)
+            function calcNST(ti){if(ti<=1200000)return 0;const sl=[{l:400000,r:0},{l:800000,r:0.05},{l:1200000,r:0.10},{l:1600000,r:0.15},{l:2000000,r:0.20},{l:2400000,r:0.25},{l:Infinity,r:0.30}];let t=0,p=0;for(let s of sl){if(ti>p){t+=(Math.min(ti,s.l)-p)*s.r;p=s.l;}}return t;}
+            const _0xnst=[{thr:5000000,lo:0,hi:0.10,lbl:'10%'},{thr:10000000,lo:0.10,hi:0.15,lbl:'15%'},{thr:20000000,lo:0.15,hi:0.25,lbl:'25%'},{thr:50000000,lo:0.25,hi:0.25,lbl:'25% (Capped)'}];
+            let _0xsr=0,_0xsrLbl='',_0xsrRate=0;
+            for(let s of _0xnst){if(_0xn>s.thr){_0xsrRate=s.hi;_0xsrLbl=s.lbl;}}
+            _0xsr=_0xt*_0xsrRate;
+            for(let s of _0xnst){if(_0xn>s.thr&&s.hi>s.lo){const tAt=calcNST(s.thr);const max=(tAt+(tAt*s.lo))+(_0xn-s.thr);if((_0xt+_0xsr)>max){_0xsr=Math.max(0,max-_0xt);}}}
+            // Show/hide surcharge row and update label
+            const _0xnsRow=document.getElementById('newSurchargeRow');
+            const _0xnsLbl=document.getElementById('newSurchargeLabel');
+            if(_0xsr>0){_0xnsRow.style.display='flex';_0xnsLbl.textContent='Surcharge @ '+_0xsrLbl+':';}else{_0xnsRow.style.display='none';}
+            const _0xc=(_0xt+_0xsr)*0.04;
+            const _0xtt=(_0xt+_0xsr)+_0xc;
+            return{grossSalary:_0xg,taxableIncome:_0xn,taxBeforeCess:Math.round(_0xt),surcharge:Math.round(_0xsr),cess:Math.round(_0xc),totalTax:Math.round(_0xtt),breakdown:_0xb};
         }
 
         function _0xcalcOld(_0xg,_0xd){
@@ -1300,22 +1296,24 @@
                 }
             }
             
-            // Surcharge (Old Regime: 37% allowed for >5Cr)
-            let _0xsro=0;
-            if(_0xn>50000000){_0xsro=0.37;}
-            else if(_0xn>20000000){_0xsro=0.25;}
-            else if(_0xn>10000000){_0xsro=0.15;}
-            else if(_0xn>5000000){_0xsro=0.10;}
-            const _0xsamto=_0xt*_0xsro;
-            const _0xtaso=_0xt+_0xsamto;
-            const _0xc=_0xtaso*0.04;
-            const _0xtt=_0xtaso+_0xc;
-            if(_0xsro>0){_0xb+=`<div class="breakdown-item"><span>Surcharge @ ${_0xsro*100}%</span><span>${_0xfmt(Math.round(_0xsamto))}</span></div>`;}
-            _0xb+=`<div class="breakdown-item"><span>Health & Education Cess @ 4%</span><span>${_0xfmt(Math.round(_0xc))}</span></div>`;
-            return{grossSalary:_0xg,deductions:_0xd,taxableIncome:_0xn,taxBeforeCess:Math.round(_0xt),surcharge:Math.round(_0xsamto),cess:Math.round(_0xc),totalTax:Math.round(_0xtt),breakdown:_0xb};
+            // Surcharge + Marginal Relief on Surcharge (Old Regime, FY 2025-26)
+            // Rates: >50L=10%, >1Cr=15%, >2Cr=25%, >5Cr=37%
+            function calcOST(ti){if(ti<=500000)return 0;const sl=[{l:250000,r:0},{l:500000,r:0.05},{l:1000000,r:0.20},{l:Infinity,r:0.30}];let t=0,p=0;for(let s of sl){if(ti>p){t+=(Math.min(ti,s.l)-p)*s.r;p=s.l;}}return t;}
+            const _0xost=[{thr:5000000,lo:0,hi:0.10,lbl:'10%'},{thr:10000000,lo:0.10,hi:0.15,lbl:'15%'},{thr:20000000,lo:0.15,hi:0.25,lbl:'25%'},{thr:50000000,lo:0.25,hi:0.37,lbl:'37%'}];
+            let _0xsr2=0,_0xsr2Lbl='',_0xsr2Rate=0;
+            for(let s of _0xost){if(_0xn>s.thr){_0xsr2Rate=s.hi;_0xsr2Lbl=s.lbl;}}
+            _0xsr2=_0xt*_0xsr2Rate;
+            for(let s of _0xost){if(_0xn>s.thr&&s.hi>s.lo){const tAt=calcOST(s.thr);const max=(tAt+(tAt*s.lo))+(_0xn-s.thr);if((_0xt+_0xsr2)>max){_0xsr2=Math.max(0,max-_0xt);}}}
+            // Show/hide surcharge row and update label
+            const _0xosRow=document.getElementById('oldSurchargeRow');
+            const _0xosLbl=document.getElementById('oldSurchargeLabel');
+            if(_0xsr2>0){_0xosRow.style.display='flex';_0xosLbl.textContent='Surcharge @ '+_0xsr2Lbl+':';}else{_0xosRow.style.display='none';}
+            const _0xc=(_0xt+_0xsr2)*0.04;
+            const _0xtt=(_0xt+_0xsr2)+_0xc;
+            return{grossSalary:_0xg,deductions:_0xd,taxableIncome:_0xn,taxBeforeCess:Math.round(_0xt),surcharge:Math.round(_0xsr2),cess:Math.round(_0xc),totalTax:Math.round(_0xtt),breakdown:_0xb};
         }
 
-        function _0xabcdef(){const _0xgnv=document[_0x5a6b[2]]('grossSalaryNew')[_0x5a6b[3]].replace(/,/g,'');const _0xgn=parseFloat(_0xgnv)||0;const _0xdv=document[_0x5a6b[2]]('deductions')[_0x5a6b[3]].replace(/,/g,'');const _0xd=parseFloat(_0xdv)||0;document[_0x5a6b[2]]('grossSalaryOld')[_0x5a6b[3]]=_0xgn>0?_0xgn[_0x5a6b[4]](_0x5a6b[5]):'';document[_0x5a6b[2]]('reliefGrossSalary')[_0x5a6b[3]]=_0xgn>0?_0xgn[_0x5a6b[4]](_0x5a6b[5]):'';if(_0xgn>0){document[_0x5a6b[2]]('newSalaryWords')[_0x5a6b[1]]=_0xnumToWords(_0xgn);document[_0x5a6b[2]]('oldSalaryWords')[_0x5a6b[1]]=_0xnumToWords(_0xgn);}else{document[_0x5a6b[2]]('newSalaryWords')[_0x5a6b[1]]='';document[_0x5a6b[2]]('oldSalaryWords')[_0x5a6b[1]]='';}if(_0xd>0){document[_0x5a6b[2]]('deductionWords')[_0x5a6b[1]]=_0xnumToWords(_0xd);}else{document[_0x5a6b[2]]('deductionWords')[_0x5a6b[1]]='';}const _0xnr=_0xcalcNew(_0xgn);document[_0x5a6b[2]]('newGross')[_0x5a6b[1]]=_0xfmt(_0xnr.grossSalary);document[_0x5a6b[2]]('newTaxable')[_0x5a6b[1]]=_0xfmt(_0xnr.taxableIncome);document[_0x5a6b[2]]('newTaxBeforeCess')[_0x5a6b[1]]=_0xfmt(_0xnr.taxBeforeCess);if(_0xnr.surcharge>0){document[_0x5a6b[2]]('newSurchargeRow').style.display='flex';document[_0x5a6b[2]]('newSurcharge')[_0x5a6b[1]]=_0xfmt(_0xnr.surcharge);}else{document[_0x5a6b[2]]('newSurchargeRow').style.display='none';}document[_0x5a6b[2]]('newCess')[_0x5a6b[1]]=_0xfmt(_0xnr.cess);document[_0x5a6b[2]]('newTotal')[_0x5a6b[1]]=_0xfmt(_0xnr.totalTax);document[_0x5a6b[2]]('newBreakdown')[_0x5a6b[6]]=_0xnr.breakdown;const _0xor=_0xcalcOld(_0xgn,_0xd);document[_0x5a6b[2]]('oldGross')[_0x5a6b[1]]=_0xfmt(_0xor.grossSalary);document[_0x5a6b[2]]('oldDeductions')[_0x5a6b[1]]=_0xfmt(_0xor.deductions);document[_0x5a6b[2]]('oldTaxable')[_0x5a6b[1]]=_0xfmt(_0xor.taxableIncome);document[_0x5a6b[2]]('oldTaxBeforeCess')[_0x5a6b[1]]=_0xfmt(_0xor.taxBeforeCess);if(_0xor.surcharge>0){document[_0x5a6b[2]]('oldSurchargeRow').style.display='flex';document[_0x5a6b[2]]('oldSurcharge')[_0x5a6b[1]]=_0xfmt(_0xor.surcharge);}else{document[_0x5a6b[2]]('oldSurchargeRow').style.display='none';}document[_0x5a6b[2]]('oldCess')[_0x5a6b[1]]=_0xfmt(_0xor.cess);document[_0x5a6b[2]]('oldTotal')[_0x5a6b[1]]=_0xfmt(_0xor.totalTax);document[_0x5a6b[2]]('oldBreakdown')[_0x5a6b[6]]=_0xor.breakdown;_0x9j0k1l();}
+        function _0xabcdef(){const _0xgnv=document[_0x5a6b[2]]('grossSalaryNew')[_0x5a6b[3]].replace(/,/g,'');const _0xgn=parseFloat(_0xgnv)||0;const _0xdv=document[_0x5a6b[2]]('deductions')[_0x5a6b[3]].replace(/,/g,'');const _0xd=parseFloat(_0xdv)||0;document[_0x5a6b[2]]('grossSalaryOld')[_0x5a6b[3]]=_0xgn>0?_0xgn[_0x5a6b[4]](_0x5a6b[5]):'';document[_0x5a6b[2]]('reliefGrossSalary')[_0x5a6b[3]]=_0xgn>0?_0xgn[_0x5a6b[4]](_0x5a6b[5]):'';if(_0xgn>0){document[_0x5a6b[2]]('newSalaryWords')[_0x5a6b[1]]=_0xnumToWords(_0xgn);document[_0x5a6b[2]]('oldSalaryWords')[_0x5a6b[1]]=_0xnumToWords(_0xgn);}else{document[_0x5a6b[2]]('newSalaryWords')[_0x5a6b[1]]='';document[_0x5a6b[2]]('oldSalaryWords')[_0x5a6b[1]]='';}if(_0xd>0){document[_0x5a6b[2]]('deductionWords')[_0x5a6b[1]]=_0xnumToWords(_0xd);}else{document[_0x5a6b[2]]('deductionWords')[_0x5a6b[1]]='';}const _0xnr=_0xcalcNew(_0xgn);document[_0x5a6b[2]]('newGross')[_0x5a6b[1]]=_0xfmt(_0xnr.grossSalary);document[_0x5a6b[2]]('newTaxable')[_0x5a6b[1]]=_0xfmt(_0xnr.taxableIncome);document[_0x5a6b[2]]('newTaxBeforeCess')[_0x5a6b[1]]=_0xfmt(_0xnr.taxBeforeCess);document[_0x5a6b[2]]('newSurcharge')[_0x5a6b[1]]=_0xfmt(_0xnr.surcharge);document[_0x5a6b[2]]('newCess')[_0x5a6b[1]]=_0xfmt(_0xnr.cess);document[_0x5a6b[2]]('newTotal')[_0x5a6b[1]]=_0xfmt(_0xnr.totalTax);document[_0x5a6b[2]]('newBreakdown')[_0x5a6b[6]]=_0xnr.breakdown;const _0xor=_0xcalcOld(_0xgn,_0xd);document[_0x5a6b[2]]('oldGross')[_0x5a6b[1]]=_0xfmt(_0xor.grossSalary);document[_0x5a6b[2]]('oldDeductions')[_0x5a6b[1]]=_0xfmt(_0xor.deductions);document[_0x5a6b[2]]('oldTaxable')[_0x5a6b[1]]=_0xfmt(_0xor.taxableIncome);document[_0x5a6b[2]]('oldTaxBeforeCess')[_0x5a6b[1]]=_0xfmt(_0xor.taxBeforeCess);document[_0x5a6b[2]]('oldSurcharge')[_0x5a6b[1]]=_0xfmt(_0xor.surcharge);document[_0x5a6b[2]]('oldCess')[_0x5a6b[1]]=_0xfmt(_0xor.cess);document[_0x5a6b[2]]('oldTotal')[_0x5a6b[1]]=_0xfmt(_0xor.totalTax);document[_0x5a6b[2]]('oldBreakdown')[_0x5a6b[6]]=_0xor.breakdown;_0x9j0k1l();}
 
         function _0x9j0k1l(){
             const _0xgiv=document[_0x5a6b[2]]('reliefGrossSalary')[_0x5a6b[3]].replace(/,/g,'');
@@ -1371,9 +1369,25 @@
                     _0xir=true; // Relief is applicable
                 }
             }
-            
-            const _0xcess=_0xta*0.04;
-            const _0xft=_0xta+_0xcess;
+
+            // Surcharge — read from New Regime card (already calculated with marginal relief)
+            const _0xnewSrRow=document.getElementById('newSurchargeRow');
+            const _0xnewSrVal=document.getElementById('newSurcharge');
+            const _0xrelSrRow=document.getElementById('reliefSurchargeRow');
+            const _0xrelSrLbl=document.getElementById('reliefSurchargeLabel');
+            const _0xrelSrSpan=document.getElementById('reliefSurcharge');
+            let _0xrelSr=0;
+            if(_0xnewSrRow && _0xnewSrRow.style.display!=='none' && _0xnewSrVal){
+                _0xrelSr=parseFloat(_0xnewSrVal.textContent.replace(/[₹,]/g,''))||0;
+                _0xrelSrRow.style.display='flex';
+                _0xrelSrLbl.textContent=document.getElementById('newSurchargeLabel').textContent;
+                _0xrelSrSpan.textContent=_0xnewSrVal.textContent;
+            } else {
+                _0xrelSrRow.style.display='none';
+            }
+
+            const _0xcess=(_0xta+_0xrelSr)*0.04;
+            const _0xft=_0xta+_0xrelSr+_0xcess;
             
             const _0xrd=document[_0x5a6b[2]]('reliefResult');
             const _0xmb=document[_0x5a6b[2]]('reliefMessage');
@@ -2128,14 +2142,6 @@
                 });
             };
         })();
-        // ── PWA Service Worker Registration ──
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(r => console.log('SW registered'))
-                    .catch(e => console.log('SW error', e));
-            });
-        }
     </script>
 </body>
 </html>
