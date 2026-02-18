@@ -1,0 +1,2147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Income Tax Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 25%, #45B7D1 50%, #FFA07A 75%, #98D8C8 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .currency-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .currency {
+            position: absolute;
+            font-size: 50px;
+            opacity: 0.4;
+            animation: float 15s infinite;
+            filter: brightness(1.2) contrast(1.1) drop-shadow(3px 3px 6px rgba(0,0,0,0.4));
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.4;
+            }
+            90% {
+                opacity: 0.4;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #fff;
+            margin-bottom: 15px;
+            font-size: 1.15em;
+            font-style: italic;
+            font-weight: 300;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+            letter-spacing: 0.5px;
+        }
+
+        .datetime-display {
+            text-align: center;
+            color: #fff;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+            letter-spacing: 1px;
+        }
+
+        .powered-by {
+            text-align: center;
+            background: linear-gradient(135deg, #d63031 0%, #00b894 20%, #0984e3 40%, #e17055 60%, #55efc4 80%, #5f27cd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 30px;
+            font-size: 1.5em;
+            font-family: 'Georgia', serif;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            filter: drop-shadow(3px 3px 8px rgba(0,0,0,0.7)) brightness(1.3);
+            padding: 10px 0;
+            animation: rainbowShift 3s ease-in-out infinite;
+        }
+
+        @keyframes rainbowShift {
+            0%, 100% { filter: drop-shadow(2px 2px 6px rgba(255, 107, 107, 0.6)); }
+            33% { filter: drop-shadow(2px 2px 6px rgba(78, 205, 196, 0.6)); }
+            66% { filter: drop-shadow(2px 2px 6px rgba(255, 160, 122, 0.6)); }
+        }
+
+        .actions {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFA07A 100%);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .action-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.6);
+        }
+
+        .action-btn:active {
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        .action-btn:nth-child(1) {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .action-btn:nth-child(1):hover {
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.6);
+        }
+
+        .action-btn:nth-child(2) {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 6px 20px rgba(240, 147, 251, 0.4);
+        }
+
+        .action-btn:nth-child(2):hover {
+            box-shadow: 0 10px 30px rgba(240, 147, 251, 0.6);
+        }
+
+        .action-btn:nth-child(3) {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+        }
+
+        .action-btn:nth-child(3):hover {
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.6);
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .regime-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .regime-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .regime-canvas-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .regime-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .copyright-mark {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            font-size: 0.7em;
+            color: rgba(102, 126, 234, 0.5);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .regime-title {
+            font-size: 1.8em;
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1.1em;
+            transition: all 0.3s;
+        }
+
+        input[type="number"]:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        input[readonly] {
+            background-color: #f0f0f0;
+            cursor: not-allowed;
+        }
+
+        .amount-in-words {
+            margin-top: 8px;
+            font-size: 0.85em;
+            color: #888;
+            font-style: italic;
+            min-height: 20px;
+        }
+
+        .result-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 18px 15px;
+            border-top: 3px solid rgba(255,255,255,0.8);
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 165, 0, 0.3) 100%);
+            border-radius: 12px;
+            box-shadow: 
+                0 0 20px rgba(255, 215, 0, 0.4),
+                inset 0 0 15px rgba(255, 255, 255, 0.2),
+                0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(255, 215, 0, 0.6);
+            animation: taxGlow 2s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-item:last-child::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes taxGlow {
+            0%, 100% {
+                box-shadow: 
+                    0 0 20px rgba(255, 215, 0, 0.4),
+                    inset 0 0 15px rgba(255, 255, 255, 0.2),
+                    0 5px 15px rgba(0, 0, 0, 0.2);
+            }
+            50% {
+                box-shadow: 
+                    0 0 30px rgba(255, 215, 0, 0.6),
+                    inset 0 0 20px rgba(255, 255, 255, 0.3),
+                    0 8px 20px rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+        }
+
+        .result-item.tax-calculation {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .result-label {
+            font-weight: 500;
+        }
+
+        .result-value {
+            font-weight: bold;
+        }
+
+        .rebate-notice {
+            background: rgba(255, 215, 0, 0.2);
+            border: 2px solid #ffd700;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            font-weight: 600;
+            text-align: center;
+            color: #fff;
+        }
+
+        .breakdown {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        .breakdown-item {
+            padding: 5px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* COMPARISON SECTION */
+        .comparison {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 50%, #fab1a0 100%);
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 15px 40px rgba(253, 203, 110, 0.5);
+            backdrop-filter: blur(10px);
+            margin-top: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+        }
+
+        .comparison h2 {
+            color: #d63031;
+            margin-bottom: 25px;
+            font-size: 2em;
+            text-align: center;
+            font-weight: 800;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .comparison-table {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .comparison-col {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+
+        .comparison-col:hover {
+            transform: translateY(-5px);
+        }
+
+        .comparison-col h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .comparison-amount {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .recommendation {
+            background: linear-gradient(135deg, #55efc4 0%, #81ecec 100%);
+            color: #00b894;
+            padding: 25px;
+            border-radius: 15px;
+            font-size: 1.3em;
+            font-weight: 700;
+            text-align: center;
+            border: 3px solid #00b894;
+            box-shadow: 0 10px 25px rgba(0, 184, 148, 0.3);
+        }
+
+        /* MARGINAL RELIEF SECTION */
+        .marginal-relief {
+            grid-column: 1 / -1;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .marginal-relief:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .relief-canvas-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .relief-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .marginal-relief h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            text-align: center;
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+        }
+
+        .relief-input-group {
+            margin-bottom: 25px;
+        }
+
+        .relief-input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .relief-input-group input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1.1em;
+            transition: all 0.3s;
+        }
+
+        #reliefResult {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 2px dashed rgba(102, 126, 234, 0.3);
+        }
+
+        .relief-data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 1.05em;
+            color: #333;
+        }
+
+        .relief-data-row span:first-child {
+            font-weight: 500;
+        }
+
+        .relief-data-row span:last-child {
+            font-weight: bold;
+        }
+
+        .relief-data-row.tax-calc-row {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .relief-separator {
+            border: 0;
+            border-top: 1px solid rgba(102, 126, 234, 0.2);
+            margin: 20px 0;
+        }
+
+        .relief-final {
+            font-size: 1.4em !important;
+            color: #667eea;
+            padding-top: 15px;
+            border-top: 2px solid rgba(102, 126, 234, 0.4);
+        }
+
+        .relief-message {
+            margin-top: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1em;
+            font-weight: 600;
+        }
+
+        .relief-msg-success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+
+        .relief-msg-info {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            color: #856404;
+            border: 2px solid #ffc107;
+        }
+
+        .relief-text-highlight {
+            color: #28a745;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(40, 167, 69, 0.2);
+        }
+
+        .relief-text-normal {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        /* TIC-TAC-TOE GAME */
+        .game-section {
+            grid-column: 1 / -1;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .game-section:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .game-canvas-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .game-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            text-align: center;
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+        }
+
+        .player-setup {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .player-input {
+            flex: 1;
+            min-width: 200px;
+            max-width: 300px;
+        }
+
+        .player-input label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .player-input input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .scoreboard {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin-bottom: 25px;
+            font-size: 1.2em;
+        }
+
+        .score-item {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 30px;
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .score-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+
+        .score-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .game-container {
+            position: relative;
+            max-width: 450px;
+            margin: 0 auto;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            border-radius: 20px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            background: white;
+            border: none;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .cell:hover:not(.taken) {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .cell.x {
+            color: #667eea;
+            text-shadow: 2px 2px 4px rgba(102, 126, 234, 0.3);
+        }
+
+        .cell.o {
+            color: #764ba2;
+            text-shadow: 2px 2px 4px rgba(118, 75, 162, 0.3);
+        }
+
+        .cell.taken {
+            cursor: not-allowed;
+        }
+
+        .win-line {
+            position: absolute;
+            width: var(--len, 0px);
+            height: 6px;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            left: var(--x1, 0px);
+            top: var(--y1, 0px);
+            transform-origin: left center;
+            transform: rotate(var(--rot, 0deg));
+            box-shadow: 0 0 20px #28a745;
+            transition: width 0.5s ease;
+            pointer-events: none;
+            border-radius: 5px;
+            z-index: 10;
+        }
+
+        #dustCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 11;
+        }
+
+        .game-status {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            text-shadow: 1px 1px 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .game-controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .game-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .game-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(240, 147, 251, 0.6);
+        }
+
+        .footer-quote {
+            text-align: center;
+            color: #fff;
+            margin-top: 40px;
+            font-size: 1.1em;
+            font-style: italic;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+            padding: 20px;
+            line-height: 1.8;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @media print {
+            .actions, .game-section { display: none; }
+            body { background: white; }
+            .currency-animation { display: none; }
+        }
+
+        @media (max-width: 968px) {
+            .calculator-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .comparison-table {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 { font-size: 1.8em; }
+            .regime-title { font-size: 1.5em; }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .action-btn {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <!-- Mobile Performance: slows CSS animations on touch devices only, tax code untouched -->
+    <style media="(hover: none) and (pointer: coarse)">
+        body { animation-duration: 30s !important; }
+        .currency { animation-duration: 25s !important; opacity: 0.2 !important; filter: none !important; }
+        .powered-by { animation: none !important; filter: none !important; }
+    </style>
+</head>
+<body>
+    <div class="currency-animation" id="currencyBg"></div>
+
+    <div class="container">
+        <h1>💰 🧮 Indian Income Tax Calculator 🧮 💰</h1>
+        <div class="subtitle">💼 What you plan, You control, what you control you master - Be a master of your own arts. 💼</div>
+        <div class="datetime-display" id="datetimeDisplay"></div>
+        <div class="powered-by">Powered By Vibhuti Dave</div>
+
+        <div class="actions">
+            <button class="action-btn" onclick="_0x1a2b3c()">🖨️ Print Results</button>
+            <button class="action-btn" onclick="_0x4d5e6f()">🔄 Reset</button>
+            <button class="action-btn" onclick="_0x7g8h9i()">📥 Download</button>
+        </div>
+
+        <div class="calculator-grid">
+            <!-- NEW REGIME -->
+            <div class="regime-card">
+                <canvas class="regime-canvas-bg" id="newRegimeCanvas"></canvas>
+                <div class="regime-content">
+                <div class="copyright-mark">©vibhuti</div>
+                <h2 class="regime-title">💰 📊 New Tax Regime 📊 💰</h2>
+                
+                <div class="input-group">
+                    <label for="grossSalaryNew">Gross Annual Salary (₹)</label>
+                    <input type="text" id="grossSalaryNew" placeholder="e.g., 15,00,000" oninput="_0xfmtInput(this);_0xabcdef()">
+                    <div class="amount-in-words" id="newSalaryWords"></div>
+                </div>
+
+                <div class="result-box">
+                    <div class="result-item">
+                        <span class="result-label">Gross Salary:</span>
+                        <span class="result-value" id="newGross">₹0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Standard Deduction:</span>
+                        <span class="result-value">₹75,000</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Taxable Income:</span>
+                        <span class="result-value" id="newTaxable">₹0</span>
+                    </div>
+                    <div class="result-item tax-calculation">
+                        <span class="result-label">Tax (Before Cess):</span>
+                        <span class="result-value" id="newTaxBeforeCess">₹0</span>
+                    </div>
+                    <div class="result-item tax-calculation" id="newSurchargeRow" style="display:none;">
+                        <span class="result-label" id="newSurchargeLabel">Surcharge:</span>
+                        <span class="result-value" id="newSurcharge">₹0</span>
+                    </div>
+                    <div class="result-item tax-calculation">
+                        <span class="result-label">Health & Education Cess (4%):</span>
+                        <span class="result-value" id="newCess">₹0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Total Tax Payable:</span>
+                        <span class="result-value" id="newTotal">₹0</span>
+                    </div>
+                    
+                    <div class="rebate-notice" id="newRebateNotice" style="display: none;">
+                        ⚠️ Rebate: No tax if income ≤ ₹12,00,000
+                    </div>
+                    
+                    <div class="breakdown" id="newBreakdown"></div>
+                </div>
+                </div>
+            </div>
+
+            <!-- OLD REGIME -->
+            <div class="regime-card">
+                <canvas class="regime-canvas-bg" id="oldRegimeCanvas"></canvas>
+                <div class="regime-content">
+                <div class="copyright-mark">©vibhuti</div>
+                <h2 class="regime-title">💰 📋 Old Tax Regime 📋 💰</h2>
+                
+                <div class="input-group">
+                    <label for="grossSalaryOld">Gross Annual Salary (₹)</label>
+                    <input type="text" id="grossSalaryOld" placeholder="Auto-synced from New Regime" readonly>
+                    <div class="amount-in-words" id="oldSalaryWords"></div>
+                </div>
+
+                <div class="input-group">
+                    <label for="deductions">Total Deductions (₹)</label>
+                    <input type="text" id="deductions" placeholder="80C, 80D, HRA, etc." oninput="_0xfmtInput(this);_0xabcdef()">
+                    <div class="amount-in-words" id="deductionWords"></div>
+                </div>
+
+                <div class="result-box">
+                    <div class="result-item">
+                        <span class="result-label">Gross Salary:</span>
+                        <span class="result-value" id="oldGross">₹0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Standard Deduction:</span>
+                        <span class="result-value">₹50,000</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Total Deductions:</span>
+                        <span class="result-value" id="oldDeductions">₹0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Taxable Income:</span>
+                        <span class="result-value" id="oldTaxable">₹0</span>
+                    </div>
+                    <div class="result-item tax-calculation">
+                        <span class="result-label">Tax (Before Cess):</span>
+                        <span class="result-value" id="oldTaxBeforeCess">₹0</span>
+                    </div>
+                    <div class="result-item tax-calculation" id="oldSurchargeRow" style="display:none;">
+                        <span class="result-label" id="oldSurchargeLabel">Surcharge:</span>
+                        <span class="result-value" id="oldSurcharge">₹0</span>
+                    </div>
+                    <div class="result-item tax-calculation">
+                        <span class="result-label">Health & Education Cess (4%):</span>
+                        <span class="result-value" id="oldCess">₹0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Total Tax Payable:</span>
+                        <span class="result-value" id="oldTotal">₹0</span>
+                    </div>
+                    
+                    <div class="rebate-notice" id="oldRebateNotice" style="display: none;">
+                        ⚠️ Rebate: No tax if income ≤ ₹5,00,000
+                    </div>
+                    
+                    <div class="breakdown" id="oldBreakdown"></div>
+                </div>
+                </div>
+            </div>
+
+            <!-- MARGINAL RELIEF -->
+            <div class="marginal-relief">
+                <canvas class="relief-canvas-bg" id="reliefCanvas"></canvas>
+                <div class="relief-content">
+                <div class="copyright-mark">©vibhuti</div>
+                <h2>💰 💎 Marginal Relief Calculator 💎 💰</h2>
+                
+                <div class="relief-input-group">
+                    <label for="reliefGrossSalary">Gross Annual Salary (₹)</label>
+                    <input type="text" id="reliefGrossSalary" placeholder="Auto-synced from New Regime" readonly>
+                </div>
+
+                <div id="reliefResult">
+                    <div class="relief-data-row">
+                        <span>Gross Salary:</span>
+                        <span id="reliefGross"></span>
+                    </div>
+                    <div class="relief-data-row">
+                        <span>Standard Deduction:</span>
+                        <span>- ₹75,000</span>
+                    </div>
+                    <div class="relief-data-row" style="margin-bottom: 25px;">
+                        <span>Taxable Income:</span>
+                        <span id="reliefTaxable" style="color: #667eea;"></span>
+                    </div>
+                    
+                    <div class="relief-data-row tax-calc-row">
+                        <span>Tax as per Slab:</span>
+                        <span id="reliefSlabTax"></span>
+                    </div>
+                    <div class="relief-data-row tax-calc-row">
+                        <span>Marginal Relief:</span>
+                        <span id="reliefAmount"></span>
+                    </div>
+                    <div class="relief-data-row tax-calc-row">
+                        <span>Tax After Relief:</span>
+                        <span id="reliefTaxAfter"></span>
+                    </div>
+                    <div class="relief-data-row tax-calc-row" id="reliefSurchargeRow" style="display:none;">
+                        <span id="reliefSurchargeLabel">Surcharge:</span>
+                        <span id="reliefSurcharge"></span>
+                    </div>
+                    <div class="relief-data-row tax-calc-row">
+                        <span>Health & Education Cess (4%):</span>
+                        <span id="reliefCess"></span>
+                    </div>
+                    
+                    <hr class="relief-separator">
+                    
+                    <div class="relief-data-row relief-final">
+                        <span>Final Payable Tax:</span>
+                        <span id="reliefFinal"></span>
+                    </div>
+
+                    <div id="reliefMessage" class="relief-message"></div>
+                </div>
+                </div>
+            </div>
+
+            <!-- COMPARISON SECTION -->
+            <div class="comparison">
+                <div class="copyright-mark" style="color: rgba(214, 48, 49, 0.15);">©vibhuti</div>
+                <h2>🎯 The Suggestion that makes you wiser 🎯</h2>
+                
+                <div class="comparison-table">
+                    <div class="comparison-col">
+                        <h3>New Regime (Standard)</h3>
+                        <div class="comparison-amount" id="compNewAmount">₹0</div>
+                    </div>
+                    <div class="comparison-col">
+                        <h3>New Regime (w/ Relief)</h3>
+                        <div class="comparison-amount" id="compReliefAmount">₹0</div>
+                    </div>
+                    <div class="comparison-col">
+                        <h3>Old Regime</h3>
+                        <div class="comparison-amount" id="compOldAmount">₹0</div>
+                    </div>
+                </div>
+                
+                <div class="recommendation" id="compRecommendation">
+                    Enter salary details to see your personalized recommendation! 🌟
+                </div>
+            </div>
+
+            <!-- TIC-TAC-TOE GAME -->
+            <div class="game-section">
+                <canvas class="game-canvas-bg" id="gameCanvasBg"></canvas>
+                <div class="copyright-mark">©vibhuti</div>
+                <div class="game-content">
+                <h2>🎮 Take a Break - Play Tic Tac Toe! 🎮</h2>
+                
+                <div class="player-setup">
+                    <div class="player-input">
+                        <label>Player X Name:</label>
+                        <input type="text" id="playerXName" value="Player X">
+                    </div>
+                    <div class="player-input">
+                        <label>Player O Name:</label>
+                        <input type="text" id="playerOName" value="Player O">
+                    </div>
+                </div>
+
+                <div class="scoreboard">
+                    <div class="score-item">
+                        <div class="score-label">Player X</div>
+                        <div class="score-value" id="scoreX">0</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Player O</div>
+                        <div class="score-value" id="scoreO">0</div>
+                    </div>
+                </div>
+
+                <div class="game-container">
+                    <div class="game-board" id="gameBoard"></div>
+                    <div class="win-line" id="winLine"></div>
+                    <canvas id="dustCanvas"></canvas>
+                </div>
+
+                <div class="game-status" id="gameStatus">Player X's turn</div>
+
+                <div class="game-controls">
+                    <button class="game-btn" onclick="_0x2m3n4o()">🔄 Reset Game</button>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-quote">
+            If the Total tax liability says "0", CONGRATS !! you already paid in silence !!
+        </div>
+    </div>
+
+    <script>
+        const _0x5a6b=['log','textContent','getElementById','value','toLocaleString','en-IN','innerHTML','classList','add','remove','style','display','none','block'];
+        
+        function _0xupdateTime(){const _0xd=new Date();const _0xopts={weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'};document[_0x5a6b[2]]('datetimeDisplay')[_0x5a6b[1]]=_0xd.toLocaleString('en-IN',_0xopts);}
+        _0xupdateTime();
+        setInterval(_0xupdateTime,1000);
+
+        const _0xcurr=['₹','💰','💵','💳','🪙'];
+        const _0xbg=document[_0x5a6b[2]]('currencyBg');
+        for(let _0xi=0;_0xi<15;_0xi++){const _0xc=document.createElement('div');_0xc.className='currency';_0xc[_0x5a6b[1]]=_0xcurr[Math.floor(Math.random()*_0xcurr.length)];_0xc[_0x5a6b[10]].left=Math.random()*100+'%';_0xc[_0x5a6b[10]].animationDelay=Math.random()*15+'s';_0xc[_0x5a6b[10]].fontSize=(Math.random()*30+30)+'px';_0xbg.appendChild(_0xc);}
+
+        function _0xfmt(_0xa){return '₹'+_0xa[_0x5a6b[4]](_0x5a6b[5]);}
+
+        function _0xfmtInput(_0xel){
+            let _0xv=_0xel[_0x5a6b[3]].replace(/,/g,'');
+            if(_0xv){
+                // Store cursor position
+                let cursorPos = _0xel.selectionStart;
+                let beforeCursor = _0xel.value.substring(0, cursorPos).replace(/,/g, '');
+                let oldLength = _0xel.value.replace(/,/g, '').length;
+                
+                // Format the number
+                _0xel[_0x5a6b[3]]=parseFloat(_0xv)[_0x5a6b[4]](_0x5a6b[5]);
+                
+                // Calculate new cursor position
+                let newLength = _0xel.value.replace(/,/g, '').length;
+                let commasBefore = _0xel.value.substring(0, cursorPos).split(',').length - 1;
+                let newPos = beforeCursor.length + commasBefore + (newLength - oldLength);
+                
+                // Set cursor position
+                setTimeout(() => {
+                    _0xel.setSelectionRange(newPos, newPos);
+                }, 0);
+            }
+        }
+
+        function _0xnumToWords(_0xn){if(_0xn===0)return'Zero';const _0xo=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine'];const _0xt=['Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];const _0xty=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];const _0xth=['','Thousand','Lakh','Crore'];function _0xc(_0xnum){if(_0xnum<10)return _0xo[_0xnum];if(_0xnum<20)return _0xt[_0xnum-10];if(_0xnum<100)return _0xty[Math.floor(_0xnum/10)]+(_0xnum%10?' '+_0xo[_0xnum%10]:'');if(_0xnum<1000)return _0xo[Math.floor(_0xnum/100)]+' Hundred'+(_0xnum%100?' '+_0xc(_0xnum%100):'');return'';}let _0xw='';if(_0xn>=10000000){_0xw+=_0xc(Math.floor(_0xn/10000000))+' Crore ';_0xn%=10000000;}if(_0xn>=100000){_0xw+=_0xc(Math.floor(_0xn/100000))+' Lakh ';_0xn%=100000;}if(_0xn>=1000){_0xw+=_0xc(Math.floor(_0xn/1000))+' Thousand ';_0xn%=1000;}if(_0xn>0){_0xw+=_0xc(_0xn);}return _0xw.trim()+' Rupees Only';}
+
+        function _0xcalcNew(_0xg){
+            const _0xs=75000;
+            const _0xn=Math.max(0,_0xg-_0xs);
+            let _0xt=0;
+            let _0xb='';
+            const _0xrn=document[_0x5a6b[2]]('newRebateNotice');
+            
+            if(_0xn<=1200000){
+                _0xt=0;
+                _0xb='<strong>Tax Calculation Breakdown:</strong><br>';
+                _0xb+='<div class="breakdown-item"><span>Income ≤ ₹12,00,000</span><span>Rebate Applied: ₹0</span></div>';
+                _0xrn[_0x5a6b[10]][_0x5a6b[11]]=_0x5a6b[13];
+            }else{
+                _0xrn[_0x5a6b[10]][_0x5a6b[11]]=_0x5a6b[12];
+                const _0xsl=[
+                    {limit:400000,rate:0},
+                    {limit:800000,rate:0.05},
+                    {limit:1200000,rate:0.10},
+                    {limit:1600000,rate:0.15},
+                    {limit:2000000,rate:0.20},
+                    {limit:2400000,rate:0.25},
+                    {limit:Infinity,rate:0.30}
+                ];
+                let _0xp=0;
+                _0xb='<strong>Tax Calculation Breakdown:</strong><br>';
+                
+                for(let _0xs of _0xsl){
+                    if(_0xn>_0xp){
+                        const _0xti=Math.min(_0xn,_0xs.limit)-_0xp;
+                        const _0xts=_0xti*_0xs.rate;
+                        _0xt+=_0xts;
+                        
+                        _0xb+=`<div class="breakdown-item"><span>${_0xfmt(_0xp)} - ${_0xfmt(Math.min(_0xn,_0xs.limit))} @ ${_0xs.rate*100}%</span><span>${_0xfmt(Math.round(_0xts))}</span></div>`;
+                        
+                        _0xp=_0xs.limit;
+                    }
+                }
+            }
+            
+            // Surcharge + Marginal Relief on Surcharge (New Regime, FY 2025-26)
+            // Rates: >50L=10%, >1Cr=15%, >2Cr=25%, >5Cr=25%(capped)
+            function calcNST(ti){if(ti<=1200000)return 0;const sl=[{l:400000,r:0},{l:800000,r:0.05},{l:1200000,r:0.10},{l:1600000,r:0.15},{l:2000000,r:0.20},{l:2400000,r:0.25},{l:Infinity,r:0.30}];let t=0,p=0;for(let s of sl){if(ti>p){t+=(Math.min(ti,s.l)-p)*s.r;p=s.l;}}return t;}
+            const _0xnst=[{thr:5000000,lo:0,hi:0.10,lbl:'10%'},{thr:10000000,lo:0.10,hi:0.15,lbl:'15%'},{thr:20000000,lo:0.15,hi:0.25,lbl:'25%'},{thr:50000000,lo:0.25,hi:0.25,lbl:'25% (Capped)'}];
+            let _0xsr=0,_0xsrLbl='',_0xsrRate=0;
+            for(let s of _0xnst){if(_0xn>s.thr){_0xsrRate=s.hi;_0xsrLbl=s.lbl;}}
+            _0xsr=_0xt*_0xsrRate;
+            for(let s of _0xnst){if(_0xn>s.thr&&s.hi>s.lo){const tAt=calcNST(s.thr);const max=(tAt+(tAt*s.lo))+(_0xn-s.thr);if((_0xt+_0xsr)>max){_0xsr=Math.max(0,max-_0xt);}}}
+            // Show/hide surcharge row and update label
+            const _0xnsRow=document.getElementById('newSurchargeRow');
+            const _0xnsLbl=document.getElementById('newSurchargeLabel');
+            if(_0xsr>0){_0xnsRow.style.display='flex';_0xnsLbl.textContent='Surcharge @ '+_0xsrLbl+':';}else{_0xnsRow.style.display='none';}
+            const _0xc=(_0xt+_0xsr)*0.04;
+            const _0xtt=(_0xt+_0xsr)+_0xc;
+            return{grossSalary:_0xg,taxableIncome:_0xn,taxBeforeCess:Math.round(_0xt),surcharge:Math.round(_0xsr),cess:Math.round(_0xc),totalTax:Math.round(_0xtt),breakdown:_0xb};
+        }
+
+        function _0xcalcOld(_0xg,_0xd){
+            const _0xs=50000;
+            const _0xn=Math.max(0,_0xg-_0xs-_0xd);
+            let _0xt=0;
+            let _0xb='';
+            const _0xro=document[_0x5a6b[2]]('oldRebateNotice');
+            
+            if(_0xn<=500000){
+                _0xt=0;
+                _0xb='<strong>Tax Calculation Breakdown:</strong><br>';
+                if(_0xd > 0) {
+                    _0xb+=`<div class="breakdown-item"><span>Other Deductions</span><span>₹${_0xd[_0x5a6b[4]](_0x5a6b[5])}</span></div>`;
+                }
+                _0xb+='<div class="breakdown-item"><span>Income ≤ ₹5,00,000</span><span>Rebate Applied: ₹0</span></div>';
+                _0xro[_0x5a6b[10]][_0x5a6b[11]]=_0x5a6b[13];
+            }else{
+                _0xro[_0x5a6b[10]][_0x5a6b[11]]=_0x5a6b[12];
+                const _0xsl=[
+                    {limit:250000,rate:0},
+                    {limit:500000,rate:0.05},
+                    {limit:1000000,rate:0.20},
+                    {limit:Infinity,rate:0.30}
+                ];
+                let _0xp=0;
+                _0xb='<strong>Tax Calculation Breakdown:</strong><br>';
+                if(_0xd > 0) {
+                    _0xb+=`<div class="breakdown-item"><span>Other Deductions</span><span>₹${_0xd[_0x5a6b[4]](_0x5a6b[5])}</span></div>`;
+                }
+                
+                for(let _0xs of _0xsl){
+                    if(_0xn>_0xp){
+                        const _0xti=Math.min(_0xn,_0xs.limit)-_0xp;
+                        const _0xts=_0xti*_0xs.rate;
+                        _0xt+=_0xts;
+                        
+                        _0xb+=`<div class="breakdown-item"><span>${_0xfmt(_0xp)} - ${_0xfmt(Math.min(_0xn,_0xs.limit))} @ ${_0xs.rate*100}%</span><span>${_0xfmt(Math.round(_0xts))}</span></div>`;
+                        
+                        _0xp=_0xs.limit;
+                    }
+                }
+            }
+            
+            // Surcharge + Marginal Relief on Surcharge (Old Regime, FY 2025-26)
+            // Rates: >50L=10%, >1Cr=15%, >2Cr=25%, >5Cr=37%
+            function calcOST(ti){if(ti<=500000)return 0;const sl=[{l:250000,r:0},{l:500000,r:0.05},{l:1000000,r:0.20},{l:Infinity,r:0.30}];let t=0,p=0;for(let s of sl){if(ti>p){t+=(Math.min(ti,s.l)-p)*s.r;p=s.l;}}return t;}
+            const _0xost=[{thr:5000000,lo:0,hi:0.10,lbl:'10%'},{thr:10000000,lo:0.10,hi:0.15,lbl:'15%'},{thr:20000000,lo:0.15,hi:0.25,lbl:'25%'},{thr:50000000,lo:0.25,hi:0.37,lbl:'37%'}];
+            let _0xsr2=0,_0xsr2Lbl='',_0xsr2Rate=0;
+            for(let s of _0xost){if(_0xn>s.thr){_0xsr2Rate=s.hi;_0xsr2Lbl=s.lbl;}}
+            _0xsr2=_0xt*_0xsr2Rate;
+            for(let s of _0xost){if(_0xn>s.thr&&s.hi>s.lo){const tAt=calcOST(s.thr);const max=(tAt+(tAt*s.lo))+(_0xn-s.thr);if((_0xt+_0xsr2)>max){_0xsr2=Math.max(0,max-_0xt);}}}
+            // Show/hide surcharge row and update label
+            const _0xosRow=document.getElementById('oldSurchargeRow');
+            const _0xosLbl=document.getElementById('oldSurchargeLabel');
+            if(_0xsr2>0){_0xosRow.style.display='flex';_0xosLbl.textContent='Surcharge @ '+_0xsr2Lbl+':';}else{_0xosRow.style.display='none';}
+            const _0xc=(_0xt+_0xsr2)*0.04;
+            const _0xtt=(_0xt+_0xsr2)+_0xc;
+            return{grossSalary:_0xg,deductions:_0xd,taxableIncome:_0xn,taxBeforeCess:Math.round(_0xt),surcharge:Math.round(_0xsr2),cess:Math.round(_0xc),totalTax:Math.round(_0xtt),breakdown:_0xb};
+        }
+
+        function _0xabcdef(){const _0xgnv=document[_0x5a6b[2]]('grossSalaryNew')[_0x5a6b[3]].replace(/,/g,'');const _0xgn=parseFloat(_0xgnv)||0;const _0xdv=document[_0x5a6b[2]]('deductions')[_0x5a6b[3]].replace(/,/g,'');const _0xd=parseFloat(_0xdv)||0;document[_0x5a6b[2]]('grossSalaryOld')[_0x5a6b[3]]=_0xgn>0?_0xgn[_0x5a6b[4]](_0x5a6b[5]):'';document[_0x5a6b[2]]('reliefGrossSalary')[_0x5a6b[3]]=_0xgn>0?_0xgn[_0x5a6b[4]](_0x5a6b[5]):'';if(_0xgn>0){document[_0x5a6b[2]]('newSalaryWords')[_0x5a6b[1]]=_0xnumToWords(_0xgn);document[_0x5a6b[2]]('oldSalaryWords')[_0x5a6b[1]]=_0xnumToWords(_0xgn);}else{document[_0x5a6b[2]]('newSalaryWords')[_0x5a6b[1]]='';document[_0x5a6b[2]]('oldSalaryWords')[_0x5a6b[1]]='';}if(_0xd>0){document[_0x5a6b[2]]('deductionWords')[_0x5a6b[1]]=_0xnumToWords(_0xd);}else{document[_0x5a6b[2]]('deductionWords')[_0x5a6b[1]]='';}const _0xnr=_0xcalcNew(_0xgn);document[_0x5a6b[2]]('newGross')[_0x5a6b[1]]=_0xfmt(_0xnr.grossSalary);document[_0x5a6b[2]]('newTaxable')[_0x5a6b[1]]=_0xfmt(_0xnr.taxableIncome);document[_0x5a6b[2]]('newTaxBeforeCess')[_0x5a6b[1]]=_0xfmt(_0xnr.taxBeforeCess);document[_0x5a6b[2]]('newSurcharge')[_0x5a6b[1]]=_0xfmt(_0xnr.surcharge);document[_0x5a6b[2]]('newCess')[_0x5a6b[1]]=_0xfmt(_0xnr.cess);document[_0x5a6b[2]]('newTotal')[_0x5a6b[1]]=_0xfmt(_0xnr.totalTax);document[_0x5a6b[2]]('newBreakdown')[_0x5a6b[6]]=_0xnr.breakdown;const _0xor=_0xcalcOld(_0xgn,_0xd);document[_0x5a6b[2]]('oldGross')[_0x5a6b[1]]=_0xfmt(_0xor.grossSalary);document[_0x5a6b[2]]('oldDeductions')[_0x5a6b[1]]=_0xfmt(_0xor.deductions);document[_0x5a6b[2]]('oldTaxable')[_0x5a6b[1]]=_0xfmt(_0xor.taxableIncome);document[_0x5a6b[2]]('oldTaxBeforeCess')[_0x5a6b[1]]=_0xfmt(_0xor.taxBeforeCess);document[_0x5a6b[2]]('oldSurcharge')[_0x5a6b[1]]=_0xfmt(_0xor.surcharge);document[_0x5a6b[2]]('oldCess')[_0x5a6b[1]]=_0xfmt(_0xor.cess);document[_0x5a6b[2]]('oldTotal')[_0x5a6b[1]]=_0xfmt(_0xor.totalTax);document[_0x5a6b[2]]('oldBreakdown')[_0x5a6b[6]]=_0xor.breakdown;_0x9j0k1l();}
+
+        function _0x9j0k1l(){
+            const _0xgiv=document[_0x5a6b[2]]('reliefGrossSalary')[_0x5a6b[3]].replace(/,/g,'');
+            const _0xg=parseFloat(_0xgiv);
+            
+            if(!_0xg){
+                document[_0x5a6b[2]]('reliefResult')[_0x5a6b[10]][_0x5a6b[11]]=_0x5a6b[12];
+                _0xupdateComparison(null,null,0);
+                return;
+            }
+            
+            const _0xs=75000;
+            const _0xti=Math.max(0,_0xg-_0xs);
+            const _0xth=1200000;
+            
+            // Calculate tax as per slab rates (same as new regime)
+            let _0xst=0;
+            if(_0xti>400000){
+                _0xst+=Math.min(400000,_0xti-400000)*0.05;
+            }
+            if(_0xti>800000){
+                _0xst+=Math.min(400000,_0xti-800000)*0.10;
+            }
+            if(_0xti>1200000){
+                _0xst+=Math.min(400000,_0xti-1200000)*0.15;
+            }
+            if(_0xti>1600000){
+                _0xst+=Math.min(400000,_0xti-1600000)*0.20;
+            }
+            if(_0xti>2000000){
+                _0xst+=Math.min(400000,_0xti-2000000)*0.25;
+            }
+            if(_0xti>2400000){
+                _0xst+=(_0xti-2400000)*0.30;
+            }
+            
+            // Apply rebate for income <= 12L
+            if(_0xti<=_0xth){
+                _0xst=0;
+            }
+            
+            let _0xta=_0xst;
+            let _0xra=0;
+            let _0xir=false;
+            
+            // Marginal relief applies when income is just above 12L threshold
+            // Relief ensures tax doesn't exceed (income - 12L)
+            if(_0xti>_0xth){
+                let _0xei=_0xti-_0xth; // Excess income over 12L
+                if(_0xst>_0xei){
+                    _0xra=_0xst-_0xei; // Relief amount
+                    _0xta=_0xei; // Tax capped at excess income
+                    _0xir=true; // Relief is applicable
+                }
+            }
+
+            // Surcharge — read from New Regime card (already calculated with marginal relief)
+            const _0xnewSrRow=document.getElementById('newSurchargeRow');
+            const _0xnewSrVal=document.getElementById('newSurcharge');
+            const _0xrelSrRow=document.getElementById('reliefSurchargeRow');
+            const _0xrelSrLbl=document.getElementById('reliefSurchargeLabel');
+            const _0xrelSrSpan=document.getElementById('reliefSurcharge');
+            let _0xrelSr=0;
+            if(_0xnewSrRow && _0xnewSrRow.style.display!=='none' && _0xnewSrVal){
+                _0xrelSr=parseFloat(_0xnewSrVal.textContent.replace(/[₹,]/g,''))||0;
+                _0xrelSrRow.style.display='flex';
+                _0xrelSrLbl.textContent=document.getElementById('newSurchargeLabel').textContent;
+                _0xrelSrSpan.textContent=_0xnewSrVal.textContent;
+            } else {
+                _0xrelSrRow.style.display='none';
+            }
+
+            const _0xcess=(_0xta+_0xrelSr)*0.04;
+            const _0xft=_0xta+_0xrelSr+_0xcess;
+            
+            const _0xrd=document[_0x5a6b[2]]('reliefResult');
+            const _0xmb=document[_0x5a6b[2]]('reliefMessage');
+            const _0xes=document[_0x5a6b[2]]('reliefSlabTax');
+            const _0xer=document[_0x5a6b[2]]('reliefAmount');
+            const _0xeta=document[_0x5a6b[2]]('reliefTaxAfter');
+            const _0xec=document[_0x5a6b[2]]('reliefCess');
+            const _0xef=document[_0x5a6b[2]]('reliefFinal');
+            
+            document[_0x5a6b[2]]('reliefGross')[_0x5a6b[1]]=_0xfmt(_0xg);
+            document[_0x5a6b[2]]('reliefTaxable')[_0x5a6b[1]]=_0xfmt(_0xti);
+            _0xes[_0x5a6b[1]]=_0xfmt(Math.round(_0xst));
+            _0xer[_0x5a6b[1]]=_0xfmt(Math.round(_0xra));
+            _0xeta[_0x5a6b[1]]=_0xfmt(Math.round(_0xta));
+            _0xec[_0x5a6b[1]]=_0xfmt(Math.round(_0xcess));
+            _0xef[_0x5a6b[1]]=_0xfmt(Math.round(_0xft));
+            
+            if(_0xir){
+                _0xes.className='relief-text-highlight';
+                _0xer.className='relief-text-highlight';
+                _0xeta.className='relief-text-highlight';
+                _0xec.className='relief-text-highlight';
+                _0xef.className='relief-text-highlight';
+                _0xmb[_0x5a6b[1]]="✨ Marginal Relief Applied! Your tax is capped to save your hard-earned money!";
+                _0xmb.className="relief-message relief-msg-success";
+            }else{
+                _0xes.className='relief-text-normal';
+                _0xer.className='relief-text-normal';
+                _0xeta.className='relief-text-normal';
+                _0xec.className='relief-text-normal';
+                _0xef.className='relief-text-normal';
+                _0xmb[_0x5a6b[1]]="ℹ️ Marginal relief is not applicable for your income level buddy.";
+                _0xmb.className="relief-message relief-msg-info";
+            }
+            
+            _0xrd[_0x5a6b[10]][_0x5a6b[11]]=_0x5a6b[13];
+            _0xupdateComparison(null,null,Math.round(_0xft));
+        }
+
+        function _0xupdateComparison(_0xnt,_0xot,_0xrt){const _0xnrv=document[_0x5a6b[2]]('grossSalaryNew')[_0x5a6b[3]].replace(/,/g,'');const _0xng=parseFloat(_0xnrv)||0;const _0xdv=document[_0x5a6b[2]]('deductions')[_0x5a6b[3]].replace(/,/g,'');const _0xdg=parseFloat(_0xdv)||0;if(_0xnt===null){const _0xnrc=_0xcalcNew(_0xng);_0xnt=_0xnrc.totalTax;}if(_0xot===null){const _0xorc=_0xcalcOld(_0xng,_0xdg);_0xot=_0xorc.totalTax;}if(_0xrt===null){_0xrt=_0xnt;}document[_0x5a6b[2]]('compNewAmount')[_0x5a6b[1]]=_0xfmt(_0xnt);document[_0x5a6b[2]]('compReliefAmount')[_0x5a6b[1]]=_0xfmt(_0xrt);document[_0x5a6b[2]]('compOldAmount')[_0x5a6b[1]]=_0xfmt(_0xot);const _0xrec=document[_0x5a6b[2]]('compRecommendation');if(_0xng===0){_0xrec[_0x5a6b[1]]='Enter salary details to see your personalized recommendation! 🌟';return;}const _0xmin=Math.min(_0xrt,_0xnt,_0xot);const _0xsavings=Math.max(_0xrt,_0xnt,_0xot)-_0xmin;let _0xmsg='';if(_0xmin===_0xrt&&_0xrt<_0xnt){_0xmsg=`🎉 BEST CHOICE: New Regime with Marginal Relief! Save ₹${_0xfmt(_0xnt-_0xrt)} compared to standard New Regime and ₹${_0xfmt(_0xot-_0xrt)} compared to Old Regime! Choose New Regime to maximize your savings! 💰`;}else if(_0xmin===_0xnt){if(_0xnt<_0xot){_0xmsg=`🎉 BEST CHOICE: New Regime (Standard)! Save ₹${_0xfmt(_0xot-_0xnt)} compared to Old Regime! Simple, hassle-free tax filing with maximum savings! 💰`;}else if(_0xnt===_0xot){_0xmsg='✅ Both New Regime and Old Regime result in same tax. Choose New Regime for simplicity and ease of filing! No deduction paperwork needed! 📝';}else{_0xmsg=`🎉 BEST CHOICE: Old Regime! Save ₹${_0xfmt(_0xnt-_0xot)} by claiming deductions! Make sure to maximize 80C, 80D, HRA and other eligible deductions! 💰`;}}else if(_0xmin===_0xot){_0xmsg=`🎉 BEST CHOICE: Old Regime! Save ₹${_0xfmt(Math.min(_0xnt,_0xrt)-_0xot)} by maximizing your deductions! Focus on 80C (₹1.5L), 80D, HRA, and other benefits! 💰`;}_0xrec[_0x5a6b[1]]=_0xmsg;}
+
+        _0xabcdef();
+
+        function _0x1a2b3c(){window.print();}
+        
+        function _0x4d5e6f(){document[_0x5a6b[2]]('grossSalaryNew')[_0x5a6b[3]]='';document[_0x5a6b[2]]('grossSalaryOld')[_0x5a6b[3]]='';document[_0x5a6b[2]]('deductions')[_0x5a6b[3]]='';document[_0x5a6b[2]]('reliefGrossSalary')[_0x5a6b[3]]='';document[_0x5a6b[2]]('newSalaryWords')[_0x5a6b[1]]='';document[_0x5a6b[2]]('oldSalaryWords')[_0x5a6b[1]]='';document[_0x5a6b[2]]('deductionWords')[_0x5a6b[1]]='';document[_0x5a6b[2]]('reliefResult')[_0x5a6b[10]][_0x5a6b[11]]=_0x5a6b[12];_0xabcdef();}
+        
+        function _0x7g8h9i(){const _0xpw=window.open('','_blank');const _0xc=document.documentElement.outerHTML;_0xpw.document.write(_0xc);_0xpw.document.close();setTimeout(()=>{_0xpw.print();},500);}
+
+        const _0xgbe=document[_0x5a6b[2]]('gameBoard');const _0xwle=document[_0x5a6b[2]]('winLine');const _0xdcv=document[_0x5a6b[2]]('dustCanvas');const _0xdct=_0xdcv?_0xdcv.getContext('2d'):null;let _0xgb=Array(9).fill(null);let _0xcp='x';let _0xgl=false;let _0xsc={x:0,o:0};const _0xgc=[];const _0xwc=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];let _0xlw=null;
+
+        function _0xrdc(){if(!_0xdcv)return;_0xdcv.width=_0xdcv.clientWidth;_0xdcv.height=_0xdcv.clientHeight;}
+        window.addEventListener('resize',_0xrdc);
+
+        function _0xinit(){_0xgbe[_0x5a6b[6]]='';_0xgb=Array(9).fill(null);if(_0xwle){_0xwle[_0x5a6b[10]].setProperty('--len','0px');}_0xgl=false;for(let _0xi=0;_0xi<9;_0xi++){const _0xc=document.createElement('div');_0xc.className='cell';_0xc.setAttribute('data-index',_0xi);_0xc.onclick=()=>_0xpm(_0xi);_0xgbe.appendChild(_0xc);_0xgc[_0xi]=_0xc;}_0xrdc();const _0xpn=document[_0x5a6b[2]]('playerXName')[_0x5a6b[3]];document[_0x5a6b[2]]('gameStatus')[_0x5a6b[1]]=`${_0xpn}'s turn`;}
+
+        function _0xpm(_0xi){if(_0xgl||_0xgb[_0xi])return;_0xgb[_0xi]=_0xcp;_0xgc[_0xi][_0x5a6b[7]][_0x5a6b[8]]('taken',_0xcp);_0xgc[_0xi][_0x5a6b[1]]=_0xcp==='x'?'✕':'◯';const _0xwco=_0xcw();if(_0xwco){_0xgl=true;_0xlw=_0xcp;_0xsc[_0xcp]++;_0xus();_0xdwl(_0xwco);const _0xpn=document[_0x5a6b[2]](`player${_0xcp.toUpperCase()}Name`)[_0x5a6b[3]];document[_0x5a6b[2]]('gameStatus')[_0x5a6b[1]]=`🎉 ${_0xpn} wins!`;setTimeout(()=>_0xda(_0xwco),300);setTimeout(_0xrb,1800);return;}if(!_0xgb.includes(null)){document[_0x5a6b[2]]('gameStatus')[_0x5a6b[1]]="🤝 It's a draw!";_0xgl=true;setTimeout(_0xrb,1500);return;}_0xcp=_0xcp==='x'?'o':'x';const _0xnpn=document[_0x5a6b[2]](`player${_0xcp.toUpperCase()}Name`)[_0x5a6b[3]];document[_0x5a6b[2]]('gameStatus')[_0x5a6b[1]]=`${_0xnpn}'s turn`;}
+
+        function _0xcw(){return _0xwc.find(_0xco=>_0xco.every(_0xi=>_0xgb[_0xi]===_0xcp));}
+
+        function _0xdwl(_0xco){if(!_0xwle)return;const _0xcr=_0xco.map(_0xi=>_0xgc[_0xi].getBoundingClientRect());const _0xbr=_0xgbe.getBoundingClientRect();const _0xx1=_0xcr[0].left+_0xcr[0].width/2-_0xbr.left;const _0xy1=_0xcr[0].top+_0xcr[0].height/2-_0xbr.top;const _0xx2=_0xcr[2].left+_0xcr[2].width/2-_0xbr.left;const _0xy2=_0xcr[2].top+_0xcr[2].height/2-_0xbr.top;const _0xle=Math.hypot(_0xx2-_0xx1,_0xy2-_0xy1);const _0xro=Math.atan2(_0xy2-_0xy1,_0xx2-_0xx1)*180/Math.PI+'deg';_0xwle[_0x5a6b[10]].setProperty('--x1',_0xx1+'px');_0xwle[_0x5a6b[10]].setProperty('--y1',_0xy1+'px');_0xwle[_0x5a6b[10]].setProperty('--len',_0xle+'px');_0xwle[_0x5a6b[10]].setProperty('--rot',_0xro);}
+
+        function _0xda(_0xco){if(!_0xdcv||!_0xdct)return;_0xrdc();const _0xpa=[];const _0xbr=_0xgbe.getBoundingClientRect();_0xco.forEach(_0xi=>{const _0xcr=_0xgc[_0xi].getBoundingClientRect();for(let _0xj=0;_0xj<40;_0xj++){_0xpa.push({x:_0xcr.left+Math.random()*_0xcr.width-_0xbr.left,y:_0xcr.top+Math.random()*_0xcr.height-_0xbr.top,vx:(Math.random()-0.5)*1.2,vy:Math.random()*2+1,life:Math.random()*60+40});}_0xgc[_0xi][_0x5a6b[1]]='';});function _0xan(){_0xdct.clearRect(0,0,_0xdcv.width,_0xdcv.height);_0xpa.forEach(_0xp=>{_0xp.x+=_0xp.vx;_0xp.y+=_0xp.vy;_0xp.life--;_0xdct.fillStyle=`rgba(102,126,234,${_0xp.life/100})`;_0xdct.fillRect(_0xp.x,_0xp.y,3,3);});if(_0xpa.some(_0xp=>_0xp.life>0)){requestAnimationFrame(_0xan);}}_0xan();}
+
+        function _0xus(){document[_0x5a6b[2]]('scoreX')[_0x5a6b[1]]=_0xsc.x;document[_0x5a6b[2]]('scoreO')[_0x5a6b[1]]=_0xsc.o;}
+
+        function _0xrb(){if(_0xwle){_0xwle[_0x5a6b[10]].setProperty('--len','0px');}if(_0xdcv&&_0xdct){_0xdct.clearRect(0,0,_0xdcv.width,_0xdcv.height);}_0xgc.forEach(_0xc=>{_0xc[_0x5a6b[1]]='';_0xc[_0x5a6b[7]][_0x5a6b[9]]('x','o','taken');});_0xgb.fill(null);_0xgl=false;if(_0xlw){_0xcp=_0xlw;}else{_0xcp=_0xcp==='x'?'o':'x';}const _0xpn=document[_0x5a6b[2]](`player${_0xcp.toUpperCase()}Name`)[_0x5a6b[3]];document[_0x5a6b[2]]('gameStatus')[_0x5a6b[1]]=`${_0xpn}'s turn`;_0xlw=null;}
+
+        function _0x2m3n4o(){_0xrb();}
+
+        if(_0xgbe){_0xinit();}
+
+        // Interactive Gradient Wave Background for Game Section
+        const gameCanvas = document.getElementById('gameCanvasBg');
+        const gameCtx = gameCanvas ? gameCanvas.getContext('2d') : null;
+        
+        if (gameCanvas && gameCtx) {
+            const gameSection = document.querySelector('.game-section');
+            
+            function resizeGameCanvas() {
+                gameCanvas.width = gameSection.offsetWidth;
+                gameCanvas.height = gameSection.offsetHeight;
+            }
+            
+            resizeGameCanvas();
+            window.addEventListener('resize', resizeGameCanvas);
+            
+            let mouse = { x: null, y: null };
+            let waves = [];
+            let particles = [];
+            
+            // Create floating orbs
+            class FloatingOrb {
+                constructor() {
+                    this.x = Math.random() * gameCanvas.width;
+                    this.y = Math.random() * gameCanvas.height;
+                    this.radius = Math.random() * 40 + 20;
+                    this.speedX = (Math.random() - 0.5) * 0.5;
+                    this.speedY = (Math.random() - 0.5) * 0.5;
+                    this.hue = Math.random() * 60 + 200; // Blue to purple range
+                    this.alpha = Math.random() * 0.15 + 0.05;
+                }
+                
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    
+                    // Mouse attraction
+                    if (mouse.x && mouse.y) {
+                        const dx = mouse.x - this.x;
+                        const dy = mouse.y - this.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < 200) {
+                            const force = (200 - distance) / 200;
+                            this.x += dx * force * 0.02;
+                            this.y += dy * force * 0.02;
+                        }
+                    }
+                    
+                    // Boundary wrapping
+                    if (this.x < -this.radius) this.x = gameCanvas.width + this.radius;
+                    if (this.x > gameCanvas.width + this.radius) this.x = -this.radius;
+                    if (this.y < -this.radius) this.y = gameCanvas.height + this.radius;
+                    if (this.y > gameCanvas.height + this.radius) this.y = -this.radius;
+                }
+                
+                draw() {
+                    const gradient = gameCtx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.radius
+                    );
+                    gradient.addColorStop(0, `hsla(${this.hue}, 70%, 60%, ${this.alpha})`);
+                    gradient.addColorStop(0.5, `hsla(${this.hue}, 70%, 50%, ${this.alpha * 0.5})`);
+                    gradient.addColorStop(1, `hsla(${this.hue}, 70%, 40%, 0)`);
+                    
+                    gameCtx.fillStyle = gradient;
+                    gameCtx.beginPath();
+                    gameCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    gameCtx.fill();
+                }
+            }
+            
+            // Create sparkle particles on mouse move
+            class Sparkle {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.size = Math.random() * 3 + 1;
+                    this.speedX = (Math.random() - 0.5) * 2;
+                    this.speedY = (Math.random() - 0.5) * 2;
+                    this.life = 60;
+                    this.maxLife = 60;
+                    this.hue = Math.random() * 60 + 200;
+                }
+                
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    this.life--;
+                    this.speedX *= 0.98;
+                    this.speedY *= 0.98;
+                }
+                
+                draw() {
+                    const alpha = this.life / this.maxLife;
+                    gameCtx.fillStyle = `hsla(${this.hue}, 80%, 70%, ${alpha})`;
+                    gameCtx.beginPath();
+                    gameCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    gameCtx.fill();
+                    
+                    // Glow effect
+                    gameCtx.shadowBlur = 10;
+                    gameCtx.shadowColor = `hsla(${this.hue}, 80%, 70%, ${alpha * 0.5})`;
+                }
+            }
+            
+            // Initialize floating orbs
+            for (let i = 0; i < 8; i++) {
+                waves.push(new FloatingOrb());
+            }
+            
+            // Mouse move event with sparkles
+            let lastSparkleTime = 0;
+            gameSection.addEventListener('mousemove', (e) => {
+                const rect = gameSection.getBoundingClientRect();
+                mouse.x = e.clientX - rect.left;
+                mouse.y = e.clientY - rect.top;
+                
+                // Create sparkles as mouse moves
+                const now = Date.now();
+                if (now - lastSparkleTime > 30) {
+                    for (let i = 0; i < 3; i++) {
+                        particles.push(new Sparkle(
+                            mouse.x + (Math.random() - 0.5) * 20,
+                            mouse.y + (Math.random() - 0.5) * 20
+                        ));
+                    }
+                    lastSparkleTime = now;
+                }
+            });
+            
+            gameSection.addEventListener('mouseleave', () => {
+                mouse.x = null;
+                mouse.y = null;
+            });
+            
+            // Animation loop
+            function animateGameBg() {
+                // Clear with semi-transparent white for trail effect
+                gameCtx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                gameCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+                
+                // Reset shadow
+                gameCtx.shadowBlur = 0;
+                
+                // Update and draw orbs
+                waves.forEach(orb => {
+                    orb.update();
+                    orb.draw();
+                });
+                
+                // Update and draw sparkles
+                particles = particles.filter(p => p.life > 0);
+                particles.forEach(particle => {
+                    particle.update();
+                    particle.draw();
+                });
+                
+                requestAnimationFrame(animateGameBg);
+            }
+            
+            animateGameBg();
+        }
+
+        // NEW REGIME CANVAS - Floating money/coins animation
+        const newRegimeCanvas = document.getElementById('newRegimeCanvas');
+        const newRegimeCtx = newRegimeCanvas ? newRegimeCanvas.getContext('2d') : null;
+        
+        if (newRegimeCanvas && newRegimeCtx) {
+            const newRegimeCard = newRegimeCanvas.parentElement;
+            
+            function resizeNewRegimeCanvas() {
+                newRegimeCanvas.width = newRegimeCard.offsetWidth;
+                newRegimeCanvas.height = newRegimeCard.offsetHeight;
+            }
+            
+            resizeNewRegimeCanvas();
+            window.addEventListener('resize', resizeNewRegimeCanvas);
+            
+            const coins = [];
+            let mouseNew = { x: null, y: null };
+            
+            class Coin {
+                constructor() {
+                    this.x = Math.random() * newRegimeCanvas.width;
+                    this.y = Math.random() * newRegimeCanvas.height;
+                    this.radius = Math.random() * 15 + 10;
+                    this.speedY = Math.random() * 0.5 + 0.2;
+                    this.speedX = (Math.random() - 0.5) * 0.3;
+                    this.opacity = Math.random() * 0.15 + 0.05;
+                    this.symbol = ['₹', '💰', '💵'][Math.floor(Math.random() * 3)];
+                    this.rotation = Math.random() * Math.PI * 2;
+                    this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+                }
+                
+                update() {
+                    this.y += this.speedY;
+                    this.x += this.speedX;
+                    this.rotation += this.rotationSpeed;
+                    
+                    if (mouseNew.x && mouseNew.y) {
+                        const dx = mouseNew.x - this.x;
+                        const dy = mouseNew.y - this.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 100) {
+                            this.y -= (100 - dist) * 0.01;
+                        }
+                    }
+                    
+                    if (this.y > newRegimeCanvas.height + this.radius) {
+                        this.y = -this.radius;
+                        this.x = Math.random() * newRegimeCanvas.width;
+                    }
+                    if (this.x < -this.radius) this.x = newRegimeCanvas.width + this.radius;
+                    if (this.x > newRegimeCanvas.width + this.radius) this.x = -this.radius;
+                }
+                
+                draw() {
+                    newRegimeCtx.save();
+                    newRegimeCtx.translate(this.x, this.y);
+                    newRegimeCtx.rotate(this.rotation);
+                    newRegimeCtx.globalAlpha = this.opacity;
+                    newRegimeCtx.font = `${this.radius * 2}px Arial`;
+                    newRegimeCtx.fillStyle = '#4ECDC4';
+                    newRegimeCtx.textAlign = 'center';
+                    newRegimeCtx.textBaseline = 'middle';
+                    newRegimeCtx.fillText(this.symbol, 0, 0);
+                    newRegimeCtx.restore();
+                }
+            }
+            
+            for (let i = 0; i < 15; i++) {
+                coins.push(new Coin());
+            }
+            
+            newRegimeCard.addEventListener('mousemove', (e) => {
+                const rect = newRegimeCard.getBoundingClientRect();
+                mouseNew.x = e.clientX - rect.left;
+                mouseNew.y = e.clientY - rect.top;
+            });
+            
+            newRegimeCard.addEventListener('mouseleave', () => {
+                mouseNew.x = null;
+                mouseNew.y = null;
+            });
+            
+            function animateNewRegime() {
+                newRegimeCtx.clearRect(0, 0, newRegimeCanvas.width, newRegimeCanvas.height);
+                coins.forEach(coin => {
+                    coin.update();
+                    coin.draw();
+                });
+                requestAnimationFrame(animateNewRegime);
+            }
+            
+            animateNewRegime();
+        }
+
+        // OLD REGIME CANVAS - Document/paper flying animation
+        const oldRegimeCanvas = document.getElementById('oldRegimeCanvas');
+        const oldRegimeCtx = oldRegimeCanvas ? oldRegimeCanvas.getContext('2d') : null;
+        
+        if (oldRegimeCanvas && oldRegimeCtx) {
+            const oldRegimeCard = oldRegimeCanvas.parentElement;
+            
+            function resizeOldRegimeCanvas() {
+                oldRegimeCanvas.width = oldRegimeCard.offsetWidth;
+                oldRegimeCanvas.height = oldRegimeCard.offsetHeight;
+            }
+            
+            resizeOldRegimeCanvas();
+            window.addEventListener('resize', resizeOldRegimeCanvas);
+            
+            const papers = [];
+            let mouseOld = { x: null, y: null };
+            
+            class Paper {
+                constructor() {
+                    this.x = Math.random() * oldRegimeCanvas.width;
+                    this.y = Math.random() * oldRegimeCanvas.height;
+                    this.width = Math.random() * 20 + 15;
+                    this.height = this.width * 1.4;
+                    this.speedY = Math.random() * 0.4 + 0.15;
+                    this.speedX = (Math.random() - 0.5) * 0.2;
+                    this.opacity = Math.random() * 0.12 + 0.04;
+                    this.rotation = Math.random() * Math.PI * 2;
+                    this.rotationSpeed = (Math.random() - 0.5) * 0.015;
+                    this.symbol = ['📄', '📝', '📋'][Math.floor(Math.random() * 3)];
+                }
+                
+                update() {
+                    this.y += this.speedY;
+                    this.x += this.speedX;
+                    this.rotation += this.rotationSpeed;
+                    
+                    if (mouseOld.x && mouseOld.y) {
+                        const dx = mouseOld.x - this.x;
+                        const dy = mouseOld.y - this.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 120) {
+                            const angle = Math.atan2(dy, dx);
+                            this.x -= Math.cos(angle) * (120 - dist) * 0.015;
+                            this.y -= Math.sin(angle) * (120 - dist) * 0.015;
+                        }
+                    }
+                    
+                    if (this.y > oldRegimeCanvas.height + this.height) {
+                        this.y = -this.height;
+                        this.x = Math.random() * oldRegimeCanvas.width;
+                    }
+                }
+                
+                draw() {
+                    oldRegimeCtx.save();
+                    oldRegimeCtx.translate(this.x, this.y);
+                    oldRegimeCtx.rotate(this.rotation);
+                    oldRegimeCtx.globalAlpha = this.opacity;
+                    oldRegimeCtx.font = `${this.width * 1.5}px Arial`;
+                    oldRegimeCtx.fillStyle = '#667eea';
+                    oldRegimeCtx.textAlign = 'center';
+                    oldRegimeCtx.textBaseline = 'middle';
+                    oldRegimeCtx.fillText(this.symbol, 0, 0);
+                    oldRegimeCtx.restore();
+                }
+            }
+            
+            for (let i = 0; i < 12; i++) {
+                papers.push(new Paper());
+            }
+            
+            oldRegimeCard.addEventListener('mousemove', (e) => {
+                const rect = oldRegimeCard.getBoundingClientRect();
+                mouseOld.x = e.clientX - rect.left;
+                mouseOld.y = e.clientY - rect.top;
+            });
+            
+            oldRegimeCard.addEventListener('mouseleave', () => {
+                mouseOld.x = null;
+                mouseOld.y = null;
+            });
+            
+            function animateOldRegime() {
+                oldRegimeCtx.clearRect(0, 0, oldRegimeCanvas.width, oldRegimeCanvas.height);
+                papers.forEach(paper => {
+                    paper.update();
+                    paper.draw();
+                });
+                requestAnimationFrame(animateOldRegime);
+            }
+            
+            animateOldRegime();
+        }
+
+        // MARGINAL RELIEF CANVAS - Tax meters and calculation symbols
+        const reliefCanvas = document.getElementById('reliefCanvas');
+        const reliefCtx = reliefCanvas ? reliefCanvas.getContext('2d') : null;
+        
+        if (reliefCanvas && reliefCtx) {
+            const reliefCard = reliefCanvas.parentElement;
+            
+            function resizeReliefCanvas() {
+                reliefCanvas.width = reliefCard.offsetWidth;
+                reliefCanvas.height = reliefCard.offsetHeight;
+            }
+            
+            resizeReliefCanvas();
+            window.addEventListener('resize', resizeReliefCanvas);
+            
+            let mouseRelief = { x: null, y: null };
+            let lastScrollY = window.scrollY;
+            let scrollVelocity = 0;
+            let scrollDirection = 0; // 1 = scrolling down, -1 = scrolling up
+            const gems = [];
+            const taxMeters = [];
+            const calculationSymbols = [];
+            
+            // Track scroll direction and velocity
+            function updateScrollBehavior() {
+                const currentScrollY = window.scrollY;
+                scrollVelocity = currentScrollY - lastScrollY;
+                scrollDirection = scrollVelocity > 0 ? 1 : (scrollVelocity < 0 ? -1 : 0);
+                lastScrollY = currentScrollY;
+                
+                // Decay velocity
+                scrollVelocity *= 0.9;
+            }
+            
+            window.addEventListener('scroll', updateScrollBehavior);
+            
+            class Gem {
+                constructor() {
+                    this.reset();
+                }
+                
+                reset() {
+                    this.x = Math.random() * reliefCanvas.width;
+                    this.y = -20;
+                    this.size = Math.random() * 15 + 10;
+                    this.baseSpeedY = Math.random() * 0.3 + 0.1;
+                    this.speedY = this.baseSpeedY;
+                    this.speedX = (Math.random() - 0.5) * 0.2;
+                    this.opacity = Math.random() * 0.2 + 0.05;
+                    this.rotation = Math.random() * Math.PI * 2;
+                    this.rotationSpeed = (Math.random() - 0.5) * 0.03;
+                    this.bounceY = 0;
+                }
+                
+                update() {
+                    this.x += this.speedX;
+                    this.rotation += this.rotationSpeed;
+                    
+                    // Scroll bounce - opposite to scroll direction
+                    if (scrollDirection !== 0) {
+                        this.bounceY += -scrollDirection * Math.abs(scrollVelocity) * 0.5;
+                    }
+                    
+                    // Decay bounce
+                    this.bounceY *= 0.85;
+                    
+                    // Normal movement
+                    this.y += this.baseSpeedY + this.bounceY;
+                    
+                    if (this.y > reliefCanvas.height + this.size) {
+                        this.reset();
+                    }
+                }
+                
+                draw() {
+                    reliefCtx.save();
+                    reliefCtx.translate(this.x, this.y);
+                    reliefCtx.rotate(this.rotation);
+                    reliefCtx.globalAlpha = this.opacity;
+                    reliefCtx.font = `${this.size * 2}px Arial`;
+                    reliefCtx.fillStyle = '#11998e';
+                    reliefCtx.textAlign = 'center';
+                    reliefCtx.textBaseline = 'middle';
+                    reliefCtx.fillText('💎', 0, 0);
+                    reliefCtx.restore();
+                }
+            }
+            
+            class TaxMeter {
+                constructor(index) {
+                    this.baseX = (reliefCanvas.width / 4) * (index + 1);
+                    this.baseY = reliefCanvas.height * 0.3 + (index * 80);
+                    this.x = this.baseX;
+                    this.y = this.baseY;
+                    this.bounceOffset = 0;
+                    this.width = 80;
+                    this.height = 15;
+                    this.fillPercent = Math.random() * 0.7 + 0.3;
+                    this.targetFill = this.fillPercent;
+                    this.opacity = 0.15;
+                    this.hoverScale = 1;
+                }
+                
+                update() {
+                    // Smooth fill animation
+                    this.fillPercent += (this.targetFill - this.fillPercent) * 0.05;
+                    
+                    // Scroll bounce - opposite to scroll direction
+                    if (scrollDirection !== 0) {
+                        this.bounceOffset += -scrollDirection * Math.abs(scrollVelocity) * 3;
+                    }
+                    
+                    // Decay bounce
+                    this.bounceOffset *= 0.8;
+                    
+                    this.y = this.baseY + this.bounceOffset;
+                    
+                    // Mouse hover interaction
+                    if (mouseRelief.x && mouseRelief.y) {
+                        const dx = mouseRelief.x - this.x;
+                        const dy = mouseRelief.y - this.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (dist < 100) {
+                            this.opacity = 0.3;
+                            this.hoverScale = 1 + (100 - dist) / 200;
+                            this.targetFill = 0.9;
+                        } else {
+                            this.opacity = 0.15;
+                            this.hoverScale += (1 - this.hoverScale) * 0.1;
+                            this.targetFill = Math.random() * 0.7 + 0.3;
+                        }
+                    } else {
+                        this.opacity = 0.15;
+                        this.hoverScale += (1 - this.hoverScale) * 0.1;
+                    }
+                }
+                
+                draw() {
+                    reliefCtx.save();
+                    reliefCtx.translate(this.x, this.y);
+                    reliefCtx.scale(this.hoverScale, this.hoverScale);
+                    reliefCtx.globalAlpha = this.opacity;
+                    
+                    // Meter background
+                    reliefCtx.fillStyle = '#cccccc';
+                    reliefCtx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
+                    
+                    // Meter fill
+                    const gradient = reliefCtx.createLinearGradient(-this.width/2, 0, this.width/2, 0);
+                    gradient.addColorStop(0, '#11998e');
+                    gradient.addColorStop(1, '#38ef7d');
+                    reliefCtx.fillStyle = gradient;
+                    reliefCtx.fillRect(-this.width/2, -this.height/2, this.width * this.fillPercent, this.height);
+                    
+                    // Meter border
+                    reliefCtx.strokeStyle = '#11998e';
+                    reliefCtx.lineWidth = 2;
+                    reliefCtx.strokeRect(-this.width/2, -this.height/2, this.width, this.height);
+                    
+                    // Percentage text
+                    reliefCtx.globalAlpha = this.opacity + 0.1;
+                    reliefCtx.fillStyle = '#11998e';
+                    reliefCtx.font = 'bold 10px Arial';
+                    reliefCtx.textAlign = 'center';
+                    reliefCtx.textBaseline = 'middle';
+                    reliefCtx.fillText(`${Math.round(this.fillPercent * 100)}%`, 0, 0);
+                    
+                    reliefCtx.restore();
+                }
+            }
+            
+            class CalculationSymbol {
+                constructor() {
+                    this.reset();
+                    this.y = Math.random() * reliefCanvas.height;
+                }
+                
+                reset() {
+                    this.x = Math.random() * reliefCanvas.width;
+                    this.y = -30;
+                    this.size = Math.random() * 20 + 15;
+                    this.baseSpeedY = Math.random() * 0.4 + 0.2;
+                    this.speedY = this.baseSpeedY;
+                    this.speedX = (Math.random() - 0.5) * 0.3;
+                    this.opacity = Math.random() * 0.15 + 0.05;
+                    this.baseOpacity = this.opacity;
+                    this.rotation = 0;
+                    this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+                    this.symbols = ['%', '₹', '+', '-', '×', '÷', '='];
+                    this.symbol = this.symbols[Math.floor(Math.random() * this.symbols.length)];
+                    this.pulsePhase = Math.random() * Math.PI * 2;
+                    this.bounceY = 0;
+                    this.bounceRotation = 0;
+                }
+                
+                update() {
+                    this.x += this.speedX;
+                    this.pulsePhase += 0.05;
+                    
+                    // Scroll bounce - bounce opposite to scroll direction
+                    if (scrollDirection !== 0) {
+                        this.bounceY += -scrollDirection * Math.abs(scrollVelocity) * 0.8;
+                        this.bounceRotation += scrollDirection * Math.abs(scrollVelocity) * 0.05;
+                    }
+                    
+                    // Decay bounce
+                    this.bounceY *= 0.85;
+                    this.bounceRotation *= 0.9;
+                    
+                    // Apply movement
+                    this.y += this.baseSpeedY + this.bounceY;
+                    this.rotation += this.rotationSpeed + this.bounceRotation;
+                    
+                    // Mouse interaction
+                    if (mouseRelief.x && mouseRelief.y) {
+                        const dx = mouseRelief.x - this.x;
+                        const dy = mouseRelief.y - this.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (dist < 150) {
+                            const angle = Math.atan2(dy, dx);
+                            this.x += Math.cos(angle) * (150 - dist) * 0.01;
+                            this.y += Math.sin(angle) * (150 - dist) * 0.01;
+                            this.rotationSpeed = 0.05;
+                            this.opacity = Math.min(0.3, this.opacity + 0.01);
+                        } else {
+                            this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+                            this.opacity = Math.max(this.baseOpacity, this.opacity - 0.01);
+                        }
+                    }
+                    
+                    if (this.y > reliefCanvas.height + this.size) {
+                        this.reset();
+                    }
+                    
+                    if (this.x < -this.size) this.x = reliefCanvas.width + this.size;
+                    if (this.x > reliefCanvas.width + this.size) this.x = -this.size;
+                }
+                
+                draw() {
+                    const pulse = Math.sin(this.pulsePhase) * 0.2 + 1;
+                    
+                    reliefCtx.save();
+                    reliefCtx.translate(this.x, this.y);
+                    reliefCtx.rotate(this.rotation);
+                    reliefCtx.scale(pulse, pulse);
+                    reliefCtx.globalAlpha = this.opacity;
+                    reliefCtx.font = `bold ${this.size}px Arial`;
+                    reliefCtx.fillStyle = '#667eea';
+                    reliefCtx.textAlign = 'center';
+                    reliefCtx.textBaseline = 'middle';
+                    reliefCtx.fillText(this.symbol, 0, 0);
+                    reliefCtx.restore();
+                }
+            }
+            
+            // Initialize elements
+            for (let i = 0; i < 8; i++) {
+                gems.push(new Gem());
+            }
+            
+            for (let i = 0; i < 3; i++) {
+                taxMeters.push(new TaxMeter(i));
+            }
+            
+            for (let i = 0; i < 15; i++) {
+                calculationSymbols.push(new CalculationSymbol());
+            }
+            
+            reliefCard.addEventListener('mousemove', (e) => {
+                const rect = reliefCard.getBoundingClientRect();
+                mouseRelief.x = e.clientX - rect.left;
+                mouseRelief.y = e.clientY - rect.top;
+            });
+            
+            reliefCard.addEventListener('mouseleave', () => {
+                mouseRelief.x = null;
+                mouseRelief.y = null;
+            });
+            
+            function animateRelief() {
+                reliefCtx.clearRect(0, 0, reliefCanvas.width, reliefCanvas.height);
+                
+                gems.forEach(gem => {
+                    gem.update();
+                    gem.draw();
+                });
+                
+                calculationSymbols.forEach(symbol => {
+                    symbol.update();
+                    symbol.draw();
+                });
+                
+                taxMeters.forEach(meter => {
+                    meter.update();
+                    meter.draw();
+                });
+                
+                requestAnimationFrame(animateRelief);
+            }
+            
+            animateRelief();
+        }
+
+        // ── Mobile heat fix ── runs ONLY on phones/tablets (touch + no hover)
+        // Caps canvas RAF loops to 30 FPS and trims background currency symbols.
+        // Zero changes to tax calculation code.
+        (function() {
+            var isTouch = (navigator.maxTouchPoints > 1) ||
+                          /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            if (!isTouch) return;
+
+            // 1. Remove excess currency symbols (keep 6 out of 15)
+            var bg = document.getElementById('currencyBg');
+            if (bg) {
+                var kids = Array.from(bg.children);
+                kids.slice(6).forEach(function(el) { bg.removeChild(el); });
+            }
+
+            // 2. Throttle ALL canvas requestAnimationFrame loops to ~30 FPS
+            var _raf = window.requestAnimationFrame.bind(window);
+            var lastT = 0;
+            window.requestAnimationFrame = function(cb) {
+                return _raf(function(t) {
+                    if (t - lastT >= 32) { lastT = t; cb(t); } // ~30 FPS gate
+                    else { window.requestAnimationFrame(cb); }  // retry next frame
+                });
+            };
+        })();
+    </script>
+</body>
+</html>
